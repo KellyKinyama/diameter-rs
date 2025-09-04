@@ -2,9 +2,10 @@
 
 import 'dart:io';
 import 'dart:typed_data';
-import '../error.dart';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
+// import '../error.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 
 /// Abstract base class for the value inside an Address AVP.
 abstract class AddressValue {
@@ -16,7 +17,7 @@ abstract class AddressValue {
 class AddressIPv4Value extends AddressValue {
   final InternetAddress address;
   AddressIPv4Value(this.address);
-  
+
   @override
   Uint8List getBytes() => address.rawAddress;
   @override
@@ -48,7 +49,7 @@ class Address extends AvpValue {
   AddressValue value;
 
   Address(this.value);
-  
+
   @override
   int get length => 2 + value.getBytes().length;
 
@@ -69,12 +70,16 @@ class Address extends AvpValue {
   factory Address.decode(ByteReader reader, int length) {
     final type = reader.readUint8() << 8 | reader.readUint8();
     final valueBytes = reader.readBytes(length - 2);
-    
+
     switch (type) {
       case 1: // IPv4
-        return Address(AddressIPv4Value(InternetAddress.fromRawAddress(valueBytes)));
+        return Address(
+          AddressIPv4Value(InternetAddress.fromRawAddress(valueBytes)),
+        );
       case 2: // IPv6
-        return Address(AddressIPv6Value(InternetAddress.fromRawAddress(valueBytes)));
+        return Address(
+          AddressIPv6Value(InternetAddress.fromRawAddress(valueBytes)),
+        );
       case 8: // E164
         return Address(AddressE164Value(String.fromCharCodes(valueBytes)));
       default:

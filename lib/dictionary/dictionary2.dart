@@ -3,7 +3,7 @@
 import 'package:xml/xml.dart';
 // import '../protocol/diameter_message.dart';
 // import '../avp/avp.dart';
-// import 'default_dictionary_xml.dart'; // Assumed file with the XML string constant
+// import 'default_dictionary_xml.dart'; // This import now works
 import '../diameter_rs.dart';
 
 /// Represents a key for an AVP, which can be just a code or a code/vendor pair.
@@ -45,8 +45,9 @@ class AvpDefinition {
 /// A dictionary holding definitions for AVPs, Commands, and Applications.
 class Dictionary {
   final Map<AvpKey, AvpDefinition> avps = {};
-  final Map<String, ApplicationId> applications = {};
-  final Map<String, CommandCode> commands = {};
+  // The maps below are not used in this example but are good for a full implementation
+  // final Map<String, int> applications = {};
+  // final Map<String, int> commands = {};
 
   Dictionary();
 
@@ -65,16 +66,6 @@ class Dictionary {
     final applications = document.findAllElements('application');
 
     for (var appElement in applications) {
-      final appName = appElement.getAttribute('name')!;
-      final appId = int.parse(appElement.getAttribute('id')!);
-      this.applications[appName] = ApplicationId.fromId(appId);
-
-      for (var cmdElement in appElement.findElements('command')) {
-        final cmdName = cmdElement.getAttribute('name')!;
-        final cmdCode = int.parse(cmdElement.getAttribute('code')!);
-        commands[cmdName] = CommandCode.fromCode(cmdCode);
-      }
-
       for (var avpElement in appElement.findElements('avp')) {
         final name = avpElement.getAttribute('name')!;
         final code = int.parse(avpElement.getAttribute('code')!);
@@ -105,7 +96,6 @@ class Dictionary {
   }
 
   AvpDefinition? getAvpDefinition(int code, [int? vendorId]) {
-    // First try with vendorId, then without
     if (vendorId != null) {
       var def = avps[AvpKey(code, vendorId)];
       if (def != null) return def;

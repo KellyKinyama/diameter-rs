@@ -2,8 +2,9 @@
 
 import 'dart:io';
 import 'dart:typed_data';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 
 class IPv4 extends AvpValue {
   final InternetAddress value;

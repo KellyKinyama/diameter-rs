@@ -1,11 +1,10 @@
 // lib/dictionary/dictionary.dart
 
 import 'package:xml/xml.dart';
-// import '../protocol/diameter_message.dart';
-// import '../avp/avp.dart';
-// import 'default_dictionary_xml.dart'; // Assumed file with the XML string constant
 import '../diameter_rs.dart';
+// import 'default_dictionary_xml.dart';
 
+// AvpKey and AvpDefinition classes remain the same.
 /// Represents a key for an AVP, which can be just a code or a code/vendor pair.
 class AvpKey {
   final int code;
@@ -59,15 +58,21 @@ class Dictionary {
     return dict;
   }
 
-  /// Loads definitions from an XML string into the dictionary.
+  /// FIXED: This method now parses AVPs at the root level AND inside applications.
   void loadXml(String xml) {
     final document = XmlDocument.parse(xml);
-    final applications = document.findAllElements('application');
+    final root = document.rootElement;
 
-    for (var appElement in applications) {
+    // 1. Find and parse all AVP definitions directly under the <diameter> tag
+    for (var avpElement in root.findElements('avp')) {
+      _parseAndAddAvp(avpElement);
+    }
+
+    // 2. Find and parse all definitions inside each <application> tag
+    for (var appElement in root.findElements('application')) {
       final appName = appElement.getAttribute('name')!;
       final appId = int.parse(appElement.getAttribute('id')!);
-      this.applications[appName] = ApplicationId.fromId(appId);
+      applications[appName] = ApplicationId.fromId(appId);
 
       for (var cmdElement in appElement.findElements('command')) {
         final cmdName = cmdElement.getAttribute('name')!;
@@ -76,28 +81,40 @@ class Dictionary {
       }
 
       for (var avpElement in appElement.findElements('avp')) {
-        final name = avpElement.getAttribute('name')!;
-        final code = int.parse(avpElement.getAttribute('code')!);
-        final vendorIdStr = avpElement.getAttribute('vendor-id');
-        final vendorId = vendorIdStr != null ? int.parse(vendorIdStr) : null;
-
-        final must = avpElement.getAttribute('must') ?? "";
-        final mFlag = must.contains('M');
-
-        final typeStr = avpElement.getElement('data')!.getAttribute('type')!;
-        final avpType = _parseAvpType(typeStr);
-
-        addAvp(
-          AvpDefinition(
-            code: code,
-            vendorId: vendorId,
-            name: name,
-            type: avpType,
-            mFlag: mFlag,
-          ),
-        );
+        _parseAndAddAvp(avpElement);
       }
     }
+  }
+
+  /// Helper function to parse an <avp> XmlElement and add it to the dictionary.
+  void _parseAndAddAvp(XmlElement avpElement) {
+    final name = avpElement.getAttribute('name')!;
+    final code = int.parse(avpElement.getAttribute('code')!);
+    final vendorIdStr = avpElement.getAttribute('vendor-id');
+    final vendorId = vendorIdStr != null ? int.parse(vendorIdStr) : null;
+
+    final must = avpElement.getAttribute('must') ?? "";
+    final mFlag = must.contains('M');
+
+    final dataElement = avpElement.getElement('data');
+    if (dataElement == null) {
+      print(
+        "Warning: AVP '$name' (code $code) has no <data> element. Skipping.",
+      );
+      return;
+    }
+    final typeStr = dataElement.getAttribute('type')!;
+    final avpType = _parseAvpType(typeStr);
+
+    addAvp(
+      AvpDefinition(
+        code: code,
+        vendorId: vendorId,
+        name: name,
+        type: avpType,
+        mFlag: mFlag,
+      ),
+    );
   }
 
   void addAvp(AvpDefinition avpDef) {
@@ -105,7 +122,6 @@ class Dictionary {
   }
 
   AvpDefinition? getAvpDefinition(int code, [int? vendorId]) {
-    // First try with vendorId, then without
     if (vendorId != null) {
       var def = avps[AvpKey(code, vendorId)];
       if (def != null) return def;
@@ -139,14 +155,7 @@ class Dictionary {
         return AvpType.time;
       case "Address":
         return AvpType.address;
-      case "IPv4":
-        return AvpType.addressIPv4;
-      case "IPv6":
-        return AvpType.addressIPv6;
-      case "Float32":
-        return AvpType.float32;
-      case "Float64":
-        return AvpType.float64;
+      // You may need to add more types here if your dictionary uses them
       default:
         return AvpType.unknown;
     }

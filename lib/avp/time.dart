@@ -1,9 +1,9 @@
 // lib/avp/time.dart
 
 import 'dart:typed_data';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
-
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 // Difference between NTP epoch (1900-01-01) and Unix epoch (1970-01-01) in seconds.
 const int ntpUnixEpochOffset = 2208988800;
 

@@ -1,8 +1,9 @@
 // lib/avp/unsigned32.dart
 
 import 'dart:typed_data';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 
 class Unsigned32 extends AvpValue {
   final int value;

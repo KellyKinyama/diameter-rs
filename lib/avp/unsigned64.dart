@@ -1,11 +1,12 @@
 // lib/avp/unsigned64.dart
 
 import 'dart:typed_data';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 
 class Unsigned64 extends AvpValue {
-  final BigInt value;
+  final int value;
   Unsigned64(this.value);
 
   @override

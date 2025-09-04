@@ -2,9 +2,9 @@
 
 import 'dart:io';
 import 'dart:typed_data';
-import '../protocol/diameter_message.dart';
-import '../dictionary/dictionary.dart';
-
+// import '../protocol/diameter_message.dart';
+// import '../dictionary/dictionary.dart';
+import '../diameter_rs.dart';
 typedef RequestHandler = Future<DiameterMessage> Function(DiameterMessage request);
 
 /// A Diameter protocol server.

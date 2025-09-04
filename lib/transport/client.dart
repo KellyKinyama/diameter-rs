@@ -3,16 +3,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-import '../protocol/diameter_message.dart';
-import '../dictionary/dictionary.dart';
-import 'codec.dart';
+// import '../protocol/diameter_message.dart';
+// import '../dictionary/dictionary.dart';
+import '../diameter_rs.dart';
+// import 'codec.dart';
 
 /// A Diameter protocol client.
 class DiameterClient {
   final String host;
   final int port;
   final Dictionary dict;
-  
+
   Socket? _socket;
   final Map<int, Completer<DiameterMessage>> _pendingRequests = {};
   int _hopByHopCounter = 0;
@@ -22,11 +23,7 @@ class DiameterClient {
   /// Connects to the server and starts listening for responses.
   Future<void> connect() async {
     _socket = await Socket.connect(host, port);
-    _socket!.listen(
-      _handleData,
-      onError: _handleError,
-      onDone: disconnect,
-    );
+    _socket!.listen(_handleData, onError: _handleError, onDone: disconnect);
   }
 
   /// Sends a Diameter message and returns a Future for the response.
@@ -34,15 +31,15 @@ class DiameterClient {
     if (_socket == null) {
       throw StateError('Client is not connected.');
     }
-    
+
     // Assign a unique Hop-by-Hop ID
     request.header.hopByHopId = ++_hopByHopCounter;
-    
+
     final completer = Completer<DiameterMessage>();
     _pendingRequests[request.header.hopByHopId] = completer;
 
     _socket!.add(request.encode());
-    
+
     return completer.future;
   }
 

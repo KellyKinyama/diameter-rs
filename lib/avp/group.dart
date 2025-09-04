@@ -1,9 +1,10 @@
 // lib/avp/group.dart
 
 import 'dart:typed_data';
-import '../dictionary/dictionary.dart';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
+// import '../dictionary/dictionary.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 
 class Grouped extends AvpValue {
   final List<Avp> avps;

@@ -2,10 +2,10 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
-import '../error.dart';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
-
+// import '../error.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 class Utf8String extends AvpValue {
   final String value;
   late final Uint8List _bytes;

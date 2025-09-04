@@ -1,9 +1,9 @@
 // lib/avp/octetstring.dart
 
 import 'dart:typed_data';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
-
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+import '../diameter_rs.dart';
 class OctetString extends AvpValue {
   final Uint8List value;
 

@@ -1,27 +1,28 @@
 // lib/avp/avp.dart
 
 import 'dart:typed_data';
-import '../dictionary/dictionary.dart';
-import '../error.dart';
-import '../helpers/byte_reader.dart';
+import '../diameter_rs.dart';
+// import '../dictionary/dictionary.dart';
+// import '../error.dart';
+// import '../helpers/byte_reader.dart';
 
 // Import all specific AVP types
-import 'address.dart';
-import 'enumerated.dart';
-import 'float32.dart';
-import 'float64.dart';
-import 'group.dart';
-import 'identity.dart';
-import 'integer32.dart';
-import 'integer64.dart';
-import 'ipv4.dart';
-import 'ipv6.dart';
-import 'octetstring.dart';
-import 'time.dart';
-import 'unsigned32.dart';
-import 'unsigned64.dart';
-import 'uri.dart';
-import 'utf8string.dart';
+// import 'address.dart';
+// import 'enumerated.dart';
+// import 'float32.dart';
+// import 'float64.dart';
+// import 'group.dart';
+// import 'identity.dart';
+// import 'integer32.dart';
+// import 'integer64.dart';
+// import 'ipv4.dart';
+// import 'ipv6.dart';
+// import 'octetstring.dart';
+// import 'time.dart';
+// import 'unsigned32.dart';
+// import 'unsigned64.dart';
+// import 'uri.dart';
+// import 'utf8string.dart';
 
 /// AVP Flags as defined in RFC 6733.
 class AvpFlags {

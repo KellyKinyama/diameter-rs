@@ -24,10 +24,18 @@ class ByteReader {
   }
 
   int readUint24() {
-    final val = (_byteData.getUint8(_offset) << 16) |
-                (_byteData.getUint8(_offset + 1) << 8) |
-                _byteData.getUint8(_offset + 2);
+    final val =
+        (_byteData.getUint8(_offset) << 16) |
+        (_byteData.getUint8(_offset + 1) << 8) |
+        _byteData.getUint8(_offset + 2);
     _offset += 3;
+    return val;
+  }
+
+  int readUint16() {
+    final val =
+        (_byteData.getUint8(_offset) << 8) | _byteData.getUint8(_offset + 1);
+    _offset += 2;
     return val;
   }
 
@@ -42,11 +50,11 @@ class ByteReader {
     _offset += 4;
     return val;
   }
-  
-  BigInt readUint64() {
+
+  int readUint64() {
     final val = _byteData.getUint64(_offset, Endian.big);
     _offset += 8;
-    return BigInt.from(val);
+    return val;
   }
 
   BigInt readInt64() {
@@ -60,7 +68,7 @@ class ByteReader {
     _offset += 4;
     return val;
   }
-  
+
   double readFloat64() {
     final val = _byteData.getFloat64(_offset, Endian.big);
     _offset += 8;

@@ -2,9 +2,10 @@
 
 import 'dart:typed_data';
 import 'dart:convert';
-import '../helpers/byte_reader.dart';
-import 'avp.dart';
-import 'octetstring.dart';
+// import '../helpers/byte_reader.dart';
+// import 'avp.dart';
+// import 'octetstring.dart';
+import '../diameter_rs.dart';
 
 class DiameterURI extends AvpValue {
   final OctetString value;

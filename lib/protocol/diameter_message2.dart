@@ -1,11 +1,12 @@
 // lib/protocol/diameter_message.dart
 
 import 'dart:typed_data';
+import '../diameter_rs.dart';
 // import '../dictionary/dictionary.dart';
 // import '../error.dart';
 // import '../helpers/byte_reader.dart';
 // import '../avp/avp.dart';
-import '../diameter_rs.dart';
+// import '../avp/unsigned32.dart';
 
 const headerLength = 20;
 
@@ -22,8 +23,8 @@ class DiameterHeader {
   int version;
   int length;
   int flags;
-  CommandCode code;
-  ApplicationId applicationId;
+  int code;
+  int applicationId;
   int hopByHopId;
   int endToEndId;
 
@@ -36,8 +37,6 @@ class DiameterHeader {
     required this.hopByHopId,
     required this.endToEndId,
   });
-
-  get isRequest => flags & DiameterFlags.REQUEST;
 
   /// Decodes a DiameterHeader from a byte reader.
   factory DiameterHeader.decode(ByteReader reader) {
@@ -52,49 +51,37 @@ class DiameterHeader {
     final hopByHopId = reader.readUint32();
     final endToEndId = reader.readUint32();
 
-    final code = CommandCode.fromCode(codeValue);
-    final appId = ApplicationId.fromId(appIdValue);
-
     return DiameterHeader(
       version: version,
       length: length,
       flags: flags,
-      code: code,
-      applicationId: appId,
+      code: codeValue,
+      applicationId: appIdValue,
       hopByHopId: hopByHopId,
       endToEndId: endToEndId,
     );
   }
 
-  /// **FIXED: This method has been rewritten to be correct and clear.**
   /// Encodes the header to a byte builder.
   void encodeTo(BytesBuilder builder) {
-    // Use a temporary buffer just for integer conversions.
-    final byteData = ByteData(8);
+    final byteData = ByteData(4);
 
-    // Version (1 byte)
     builder.addByte(version);
 
-    // Length (3 bytes)
     byteData.setUint32(0, length, Endian.big);
     builder.add(byteData.buffer.asUint8List(1, 3));
 
-    // Flags (1 byte)
     builder.addByte(flags);
 
-    // Code (3 bytes)
-    byteData.setUint32(0, code.code, Endian.big);
+    byteData.setUint32(0, code, Endian.big);
     builder.add(byteData.buffer.asUint8List(1, 3));
 
-    // Application ID (4 bytes)
-    byteData.setUint32(0, applicationId.id, Endian.big);
+    byteData.setUint32(0, applicationId, Endian.big);
     builder.add(byteData.buffer.asUint8List(0, 4));
 
-    // Hop-by-Hop ID (4 bytes)
     byteData.setUint32(0, hopByHopId, Endian.big);
     builder.add(byteData.buffer.asUint8List(0, 4));
 
-    // End-to-End ID (4 bytes)
     byteData.setUint32(0, endToEndId, Endian.big);
     builder.add(byteData.buffer.asUint8List(0, 4));
   }
@@ -111,8 +98,8 @@ class DiameterMessage {
 
   /// Creates a new request or response message.
   factory DiameterMessage.create(
-    CommandCode code,
-    ApplicationId applicationId,
+    int code,
+    int applicationId,
     Dictionary dict, {
     int flags = 0,
     int? hopByHopId,
@@ -152,8 +139,6 @@ class DiameterMessage {
   /// Encodes the message to a Uint8List.
   Uint8List encode() {
     final builder = BytesBuilder();
-
-    // Recalculate length before encoding header
     int totalAvpLength = 0;
     for (var avp in avps) {
       totalAvpLength += avp.header.length + avp.padding;
@@ -174,10 +159,12 @@ class DiameterMessage {
     avps.add(avp);
   }
 
-  /// Finds the first AVP with the given code.
-  Avp? getAvp(int code) {
+  /// Finds the first AVP with the given code and optional vendorId.
+  Avp? getAvp(int code, {int? vendorId}) {
     try {
-      return avps.firstWhere((avp) => avp.header.code == code);
+      return avps.firstWhere(
+        (avp) => avp.header.code == code && avp.header.vendorId == vendorId,
+      );
     } catch (e) {
       return null;
     }
@@ -191,6 +178,18 @@ class DiameterMessage {
     }
     return null;
   }
+}
+
+/// Common AVP Codes from RFC 6733
+class AvpCode {
+  static const int OriginHost = 264;
+  static const int OriginRealm = 296;
+  static const int HostIpAddress = 257;
+  static const int VendorId = 266;
+  static const int ProductName = 269;
+  static const int ResultCode = 268;
+  static const int FailedAvp = 279;
+  static const int AuthApplicationId = 258;
 }
 
 /// Common Result-Code values from RFC 6733
@@ -249,16 +248,4 @@ enum ApplicationId {
       throw DiameterException.decode('Unknown application id: $id');
     }
   }
-}
-
-/// Common AVP Codes from RFC 6733
-class AvpCode {
-  static const int OriginHost = 264;
-  static const int OriginRealm = 296;
-  static const int HostIpAddress = 257;
-  static const int VendorId = 266;
-  static const int ProductName = 269;
-  static const int ResultCode = 268;
-  static const int FailedAvp = 279;
-  static const int AuthApplicationId = 258;
 }
